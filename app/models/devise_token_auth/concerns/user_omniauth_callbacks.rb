@@ -2,27 +2,35 @@ module DeviseTokenAuth::Concerns::UserOmniauthCallbacks
   extend ActiveSupport::Concern
 
   included do
-    validates :email, presence: true, email: true, if: Proc.new { |u| u.provider == 'email' }
-    validates_presence_of :uid, if: Proc.new { |u| u.provider != 'email' }
+    validates_presence_of :uid
 
-    # only validate unique emails among email registration users
-    validate :unique_email_user, on: :create
+    # only validate unique uids among email registration users
+    validate :unique_uid_user, on: :create
 
-    # keep uid in sync with email
-    before_save :sync_uid
-    before_create :sync_uid
+    before_validation :generate_uid
+  end
+
+  module ClassMethods
+    def uid
+      loop do
+        token = Devise.friendly_token
+        break token unless to_adapter.find_first({uid: token})
+      end
+    end
   end
 
   protected
 
   # only validate unique email among users that registered by email
-  def unique_email_user
-    if provider == 'email' && self.class.where(provider: 'email', email: email).count > 0
-      errors.add(:email, :taken)
+  def unique_uid_user
+    if provider == 'email' && self.class.where(provider: 'email', uid: uid).count > 0
+      errors.add(:uid, :taken)
     end
   end
 
-  def sync_uid
-    self.uid = email if provider == 'email'
+
+  private
+  def generate_uid
+    self.uid = self.class.uid if self.uid.nil?
   end
 end
