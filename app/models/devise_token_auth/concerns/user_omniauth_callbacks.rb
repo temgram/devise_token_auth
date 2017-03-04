@@ -3,9 +3,11 @@ module DeviseTokenAuth::Concerns::UserOmniauthCallbacks
 
   included do
     validates_presence_of :uid
+    validates :email, presence: true, email: true, if: Proc.new { |u| u.provider == 'email' }
 
     # only validate unique uids among email registration users
     validate :unique_uid_user, on: :create
+    validate :unique_email_user, on: :create
 
     before_validation :generate_uid
   end
@@ -28,6 +30,11 @@ module DeviseTokenAuth::Concerns::UserOmniauthCallbacks
     end
   end
 
+  def unique_email_user
+    if provider == 'email' && self.class.where(provider: 'email', email: email).count > 0
+      errors.add(:email, :taken)
+    end
+  end
 
   private
   def generate_uid
