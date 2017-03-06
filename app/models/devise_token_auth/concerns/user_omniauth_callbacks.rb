@@ -28,8 +28,7 @@ module DeviseTokenAuth::Concerns::UserOmniauthCallbacks
 
     # private
     def generate_uid
-      puts 'generate_uid'
-      self.uid = self.class.uid if self.uid.nil?
+      self.uid = self.class.uid unless self.uid.present?
     end
   end
 
