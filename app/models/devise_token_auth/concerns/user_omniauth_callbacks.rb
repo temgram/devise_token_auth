@@ -2,14 +2,14 @@ module DeviseTokenAuth::Concerns::UserOmniauthCallbacks
   extend ActiveSupport::Concern
 
   included do
-    validates_presence_of :uid
+    before_validation :generate_uid
+
+    validates :uid, presence: true
     validates :email, presence: true, email: true, if: Proc.new { |u| u.provider == 'email' }
 
     # only validate unique uids among email registration users
     validate :unique_uid_user, on: :create
     validate :unique_email_user, on: :create
-
-    before_validation :generate_uid
   end
 
   module ClassMethods
