@@ -11,7 +11,7 @@ module DeviseTokenAuth::Concerns::UserOmniauthCallbacks
     validate :unique_uid_user, on: :create
     validate :unique_email_user, on: :create
 
-    # protected
+    protected
 
     # only validate unique email among users that registered by email
     def unique_uid_user
@@ -26,7 +26,7 @@ module DeviseTokenAuth::Concerns::UserOmniauthCallbacks
       end
     end
 
-    # private
+    private
     def generate_uid
       self.uid = self.class.uid unless self.uid.present?
     end
